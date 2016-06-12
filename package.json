@@ -1,0 +1,16 @@
+{
+  "name": "bartschlaggio",
+  "version": "0.0.1",
+  "description": "The sprinkler DYI project",
+  "main": "index.js",
+  "dependencies": {
+    "onoff": "^1.1.1",
+    "pi-gpio": "^0.0.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dr. Patrick Bartsch <bartsch98@gmail.com>",
+  "license": "UNLICENSED"
+}
