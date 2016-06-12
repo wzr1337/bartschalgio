@@ -1,7 +1,12 @@
-var sprinklers = [2,3,4,17,21,22,10,9];
 var Gpio = require('onoff').Gpio;                    // Constructor function for Gpio objects.
 
-// Toggle the state of the LED on GPIO #14 every 200ms 'count' times.
+
+// inits
+var sprinklers = [2,3,4,17,21,22,10,9];
+
+
+
+// Toggle the state of the LED on a sprinkler every 2000ms 'count' times.
 // Here asynchronous methods are used. Synchronous methods are also available.
 function blink(sprinkler, count) {
   //var sprinkler = new Gpio(pin, 'out'); //Export GPIO as output
@@ -31,8 +36,7 @@ function blinkGpio(pin, repeat) {
    blink(new Gpio(pin, 'out'), repeat);
 }
 
-
-blinkGpio(sprinklers[0], 10);
-blinkGpio(sprinklers[1], 10);
-blinkGpio(sprinklers[2], 10);
-blinkGpio(sprinklers[3], 10);
+// blink them all
+for (var i = 0; i < sprinklers.length; i++) {
+  blinkGpio(sprinklers[i], 10);
+}
