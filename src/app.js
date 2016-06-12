@@ -9,7 +9,7 @@ var express = require('express'),
 //settings
 const SPRINKLER_BASE_URI = 'sprinklers';
 const sprinklerPins = [2,3,4,17,21,22,10,9];
-// parse application/x-www-form-urlencoded
+// parse application/json
 app.use(bodyParser.json())
 
 // inits
