@@ -4,12 +4,16 @@
   "description": "The sprinkler DYI project",
   "main": "index.js",
   "dependencies": {
+    "express": "^4.13.4",
     "onoff": "^1.1.1",
     "pi-gpio": "^0.0.8"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^1.9.2"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "develop": "nodemon src/app.js"
   },
   "author": "Dr. Patrick Bartsch <bartsch98@gmail.com>",
   "license": "UNLICENSED"
