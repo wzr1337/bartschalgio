@@ -23,11 +23,7 @@ var init = () => {
       gpio: new Gpio(sprinklerPins[i], 'out'),
       isActive: false
     });
-    sprinklers[i].gpio.write(1, function (err) { // Asynchronous write.
-      if (err) {
-        console.log(err);
-      }
-    });
+    sprinklers[i].gpio.writeSync(1);
   }
 }
 
@@ -35,7 +31,7 @@ function matchSprinkler(sprinkler) {
   return sprinkler.id === Number(this);
 }
 
-// respond with "hello world" when a GET request is made to the homepage
+// list all sprinklers on GET /
 app.get('/', function(req, res) {
   var services = {
     [SPRINKLER_BASE_URI] : {
@@ -46,6 +42,7 @@ app.get('/', function(req, res) {
   res.json(services);
 });
 
+// retrieve information for a particular sprinkler or a list of sprinklers
 app.get('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   if(!req.params.id) {
     // send a list of all sprinklers
@@ -55,8 +52,9 @@ app.get('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   //else lets return the sprinkler
   var sprinkler = sprinklers.find(matchSprinkler, req.params.id);
   if (!sprinkler) {
+    var err = new Error("Object not found");
     res.status(404);
-    res.send('Object not found');
+    return res.json({error : err.message});
   }
   res.status(200);
   return res.json(sprinkler);
@@ -79,13 +77,10 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   }
 
   var isActive = (req.body.isActive === true) || (req.body.isactive === true);
+  console.log(isActive);
   if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
-    sprinkler.gpio.write(isActive ? 1 : 0, function (err) { // Asynchronous write.
-      if (err) {
-        console.log(err);
-      }
-    });
+    sprinkler.gpio.writeSync(isActive ? 0 : 1);
     res.status(200);
   }
 
