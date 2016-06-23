@@ -4,6 +4,7 @@
   "description": "The sprinkler DYI project",
   "main": "index.js",
   "dependencies": {
+    "colors": "^1.1.2",
     "express": "^4.13.4",
     "onoff": "^1.1.1",
     "pi-gpio": "^0.0.8"

@@ -1,9 +1,12 @@
+#! /usr/bin/env node
+
 var express = require('express'),
     os = require("os"),
     hostname = os.hostname(),
     app = express(),
     path = require('path'),
     bodyParser = require('body-parser'),
+    colors = require('colors'),
     Gpio = require('onoff').Gpio;                    // Constructor function for Gpio objects.
 
 //settings
@@ -15,6 +18,7 @@ app.use(bodyParser.json())
 // inits
 var sprinklers = [];
 var init = () => {
+  console.log(colors.grey("[INFO] Initializing sprinkler pins."));
   for (var i = 0; i < sprinklerPins.length; i++) {
     sprinklers.push({
       uri: '/' + path.join(SPRINKLER_BASE_URI, i.toString()),
@@ -25,6 +29,7 @@ var init = () => {
     });
     sprinklers[i].gpio.writeSync(1);
   }
+  console.log(colors.grey("[INFO] Initialized %d sprinklers", sprinklers.length));
 }
 
 function matchSprinkler(sprinkler) {
@@ -99,7 +104,7 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
 });
 
 var server = app.listen(3000, () => {
-  console.log("Server running on PORT %d", server.address().port);
+  console.log(colors.green("[INFO]"), "Server running on PORT %d", server.address().port);
 });
 
 
