@@ -55,7 +55,7 @@ var init = () => {
  *
  * @returns true if sprinkler matches input
  */
-const matchSprinkler = (sprinkler) => {
+const matchSprinkler = function(sprinkler) {
   return sprinkler.id === Number(this);
 };
 
