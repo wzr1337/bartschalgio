@@ -15,26 +15,49 @@ const sprinklerPins = [2,3,4,17,21,22,10,9];
 // parse application/json
 app.use(bodyParser.json())
 
+
+/*
+ * Filter the sprinkler object for serialization
+ *
+ * @param spinkler [object] the sprinkler object
+ * @returns the filtered object
+ */
+const _toObject = (sprinkler) => {
+  return {
+    uri: sprinkler.uri,
+    id: sprinkler.id,
+    name: sprinkler.name,
+    gpio: sprinkler.gpio.gpio,
+    isActive: sprinkler.isActive
+  }
+}
+
 // inits
 var sprinklers = [];
 var init = () => {
   console.log(colors.grey("[INFO] Initializing sprinkler pins."));
   for (var i = 0; i < sprinklerPins.length; i++) {
-    sprinklers.push({
+    var sprinkler = {
       uri: '/' + path.join(SPRINKLER_BASE_URI, i.toString()),
       id: i,
       name: "",
       gpio: new Gpio(sprinklerPins[i], 'out'),
       isActive: false
-    });
-    sprinklers[i].gpio.writeSync(1);
+    };
+    sprinkler.gpio.writeSync(1);
+    sprinklers.push(sprinkler);
   }
-  console.log(colors.grey("[INFO] Initialized %d sprinklers", sprinklers.length));
+  console.log(colors.grey("[INFO] Initialized", sprinklers.length, "sprinklers"));
 }
 
-function matchSprinkler(sprinkler) {
+/*
+ * A matcher function for spinkler matching
+ *
+ * @returns true if sprinkler matches input
+ */
+const matchSprinkler = (sprinkler) => {
   return sprinkler.id === Number(this);
-}
+};
 
 // list all sprinklers on GET /
 app.get('/', function(req, res) {
@@ -52,7 +75,11 @@ app.get('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   if(!req.params.id) {
     // send a list of all sprinklers
     res.status(200);
-    return res.json(sprinklers);
+    var ret = [];
+    for (var i = 0; i < sprinklers.length; i++) {
+      ret.push(_toObject(sprinklers[i]));
+    }
+    return res.json(ret);
   }
   //else lets return the sprinkler
   var sprinkler = sprinklers.find(matchSprinkler, req.params.id);
@@ -62,7 +89,7 @@ app.get('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
     return res.json({error : err.message});
   }
   res.status(200);
-  return res.json(sprinkler);
+  return res.json(_toObject(sprinkler));
 });
 
 app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
@@ -95,7 +122,7 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   }
 
   if (res.statusCode === 200) {
-    return res.json(sprinkler);
+    return res.json(_toObject(sprinkler));
   }
 
   var err = new Error('No processable payload in request body');
@@ -103,8 +130,8 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   return res.json({error : err.message});
 });
 
-var server = app.listen(3000, () => {
-  console.log(colors.green("[INFO]"), "Server running on PORT %d", server.address().port);
+var server = app.listen(process.env.PORT || 3000, () => {
+  console.log(colors.green("[INFO]"), "Server running on PORT", server.address().port);
 });
 
 
