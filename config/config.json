@@ -1,0 +1,41 @@
+/*
+ * This is the gpio2rest configuration file.
+ *
+ */
+{
+    "host": "0.0.0.0",
+    "port": "3333",
+    "devices": [{
+        "name": "frontyard",
+        "gpio": 2,
+        "isActivebyDefault": false
+    }, {
+        "name": "side",
+        "gpio": 3,
+        "isActivebyDefault": false
+    }, {
+        "name": "terrace",
+        "gpio": 4,
+        "isActivebyDefault": false
+    }, {
+        "name": "backyard",
+        "gpio": 17,
+        "isActivebyDefault": false
+    }, {
+        "name": "",
+        "gpio": 21,
+        "isActivebyDefault": false
+    }, {
+        "name": "",
+        "gpio": 22,
+        "isActivebyDefault": false
+    }, {
+        "name": "",
+        "gpio": 10,
+        "isActivebyDefault": false
+    }, {
+        "name": "",
+        "gpio": 9,
+        "isActivebyDefault": false
+    }]
+}

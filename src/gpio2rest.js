@@ -7,13 +7,47 @@ var express = require('express'),
     path = require('path'),
     bodyParser = require('body-parser'),
     colors = require('colors'),
-    Gpio = require('onoff').Gpio;                    // Constructor function for Gpio objects.
+    cjson = require('cjson'),
+    Gpio;                    // Constructor function for Gpio objects.
+
+/// mock gpio
+function GpioMock(gpio, direction) {
+  this.direction = direction;
+  this.gpio = gpio;
+  this.writeSync = (state) => {
+    this.state = state;
+    console.log(colors.grey("[INFO]"), "Setting mocked gpio state:", this.state, "for gpio", this.gpio);
+    return;
+  }
+}
+///
+
+if (process.env.NODE_ENV ==='production') {
+  Gpio = require('onoff').Gpio;
+}
+else {
+  Gpio = GpioMock;
+}
+
+const conf = cjson.load("../config/config.json");
+if (!conf.devices) {
+  throw new Error("Configuration file is missing a devices property.");
+}
+if (!Array.isArray(conf.devices) || conf.devices.length < 1) {
+  throw new Error("Configuration file is missing at least one device configuration.");
+}
 
 //settings
 const SPRINKLER_BASE_URI = 'sprinklers';
-const sprinklerPins = [2,3,4,17,21,22,10,9];
 // parse application/json
 app.use(bodyParser.json())
+
+// enable CORS
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 
 /*
@@ -36,14 +70,15 @@ const _toObject = (sprinkler) => {
 var sprinklers = [];
 var init = () => {
   console.log(colors.grey("[INFO] Initializing sprinkler pins."));
-  for (var i = 0; i < sprinklerPins.length; i++) {
+  for (var i = 0; i < conf.devices.length; i++) {
     var sprinkler = {
       uri: '/' + path.join(SPRINKLER_BASE_URI, i.toString()),
       id: i,
-      name: "",
-      gpio: new Gpio(sprinklerPins[i], 'out'),
-      isActive: false
+      name: conf.devices[i].name,
+      gpio: new Gpio(conf.devices[i].gpio, 'out'),
+      isActive: conf.devices[i].isActivebyDefault || false
     };
+    console.log(colors.grey("[INFO] Initializing", JSON.stringify(_toObject(sprinkler))));
     sprinkler.gpio.writeSync(1);
     sprinklers.push(sprinkler);
   }
@@ -58,6 +93,10 @@ var init = () => {
 const matchSprinkler = function(sprinkler) {
   return sprinkler.id === Number(this);
 };
+
+const plotDate = () => {
+  return new Date().toISOString();
+}
 
 // list all sprinklers on GET /
 app.get('/', function(req, res) {
@@ -109,7 +148,6 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   }
 
   var isActive = (req.body.isActive === true) || (req.body.isactive === true);
-  console.log(isActive);
   if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
     sprinkler.gpio.writeSync(isActive ? 0 : 1);
@@ -122,6 +160,7 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   }
 
   if (res.statusCode === 200) {
+    console.log(colors.grey(plotDate(), "[LOG]"), "new gpio state:", _toObject(sprinkler));
     return res.json(_toObject(sprinkler));
   }
 
@@ -130,7 +169,7 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   return res.json({error : err.message});
 });
 
-var server = app.listen(process.env.PORT || 3000, () => {
+var server = app.listen(process.env.PORT || conf.port || 3000, () => {
   console.log(colors.green("[INFO]"), "Server running on PORT", server.address().port);
 });
 
