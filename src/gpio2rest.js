@@ -71,15 +71,16 @@ var sprinklers = [];
 var init = () => {
   console.log(colors.grey("[INFO] Initializing sprinkler pins."));
   for (var i = 0; i < conf.devices.length; i++) {
+    var device = conf.devices[i];
     var sprinkler = {
       uri: '/' + path.join(SPRINKLER_BASE_URI, i.toString()),
       id: i,
-      name: conf.devices[i].name,
-      gpio: new Gpio(conf.devices[i].gpio, 'out'),
-      isActive: conf.devices[i].isActivebyDefault || false
+      name: device.name,
+      gpio: new Gpio(device.gpio, 'out'),
+      isActive: device.isActiveByDefault || false
     };
     console.log(colors.grey("[INFO] Initializing", JSON.stringify(_toObject(sprinkler))));
-    sprinkler.gpio.writeSync(1);
+    sprinkler.gpio.writeSync(sprinkler.isActive?0:1);
     sprinklers.push(sprinkler);
   }
   console.log(colors.grey("[INFO] Initialized", sprinklers.length, "sprinklers"));
@@ -127,6 +128,8 @@ app.get('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
     res.status(404);
     return res.json({error : err.message});
   }
+  // get the actual status
+  sprinkler.isActive = !sprinkler.gpio.readSync();
   res.status(200);
   return res.json(_toObject(sprinkler));
 });
