@@ -4,6 +4,7 @@
   "description": "The sprinkler DYI project",
   "main": "index.js",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "cjson": "^0.4.0",
     "colors": "^1.1.2",
     "express": "^4.13.4",

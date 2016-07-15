@@ -19,10 +19,14 @@ function GpioMock(gpio, direction) {
     console.log(colors.grey("[INFO]"), "Setting mocked gpio state:", this.state, "for gpio", this.gpio);
     return;
   }
+  this.readSync = (state) => {
+    console.log(colors.grey("[INFO]"), "Reading mocked gpio state:", this.state, "for gpio", this.gpio);
+    return this.state;
+  }
 }
 ///
 
-if (process.env.NODE_ENV ==='production') {
+if (process.env.NODE_ENV === 'production') {
   Gpio = require('onoff').Gpio;
 }
 else {
