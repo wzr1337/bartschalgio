@@ -1,28 +1,33 @@
 /*
  * This is the gpio2rest configuration file.
  *
+
+ nerderiagarden:3333/sprinklers/1   hinten
+   nerderiagarden:3333/sprinklers/2 vorne
+     nerderiagarden:3333/sprinklers/3 Terasse
+       nerderiagarden:3333/sprinklers/4 Seite
  */
 {
     "host": "0.0.0.0",
     "port": "3333",
     "devices": [{
-        "name": "frontyard",
+        "name": "general",
         "gpio": 2,
         "isActivebyDefault": false
     }, {
-        "name": "side",
+        "name": "backyard",
         "gpio": 3,
         "isActivebyDefault": false
     }, {
-        "name": "terrace",
+        "name": "frontyard",
         "gpio": 4,
         "isActivebyDefault": false
     }, {
-        "name": "backyard",
+        "name": "terrace",
         "gpio": 17,
         "isActivebyDefault": false
     }, {
-        "name": "",
+        "name": "side",
         "gpio": 21,
         "isActivebyDefault": false
     }, {
