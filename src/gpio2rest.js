@@ -33,7 +33,7 @@ else {
   Gpio = GpioMock;
 }
 
-const conf = cjson.load("../config/config.json");
+const conf = cjson.load(path.join(__dirname, "../config/config.json"));
 if (!conf.devices) {
   throw new Error("Configuration file is missing a devices property.");
 }
