@@ -10,17 +10,47 @@ var express = require('express'),
     cjson = require('cjson'),
     Gpio;                    // Constructor function for Gpio objects.
 
+
+const logger = (function () {
+  const plotDate = () => {
+    return new Date().toISOString();
+  }
+
+  return {
+    log: function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(colors.white(plotDate(), "[LOG]"));
+        console.log.apply(console, args);
+    },
+    warn: function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(colors.yellow(plotDate(), "[WARN]"));
+        console.warn.apply(console, args);
+    },
+    info: function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(colors.grey(plotDate(), "[INFO]"));
+        console.warn.apply(console, args);
+    },
+    error: function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(colors.red(plotDate(), "[ERROR]"));
+        console.error.apply(console, args);
+    }
+  }
+}());
+
 /// mock gpio
 function GpioMock(gpio, direction) {
   this.direction = direction;
   this.gpio = gpio;
   this.writeSync = (state) => {
     this.state = state;
-    console.log(colors.grey("[INFO]"), "Setting mocked gpio state:", this.state, "for gpio", this.gpio);
+    logger.info("Setting mocked gpio state:", this.state, "for gpio", this.gpio);
     return;
   }
   this.readSync = (state) => {
-    console.log(colors.grey("[INFO]"), "Reading mocked gpio state:", this.state, "for gpio", this.gpio);
+    logger.info("Reading mocked gpio state:", this.state, "for gpio", this.gpio);
     return this.state;
   }
 }
@@ -73,7 +103,7 @@ const _toObject = (sprinkler) => {
 // inits
 var sprinklers = [];
 var init = () => {
-  console.log(colors.grey("[INFO] Initializing sprinkler pins."));
+  logger.info("Initializing sprinkler pins.");
   for (var i = 0; i < conf.devices.length; i++) {
     var device = conf.devices[i];
     var sprinkler = {
@@ -83,11 +113,11 @@ var init = () => {
       gpio: new Gpio(device.gpio, 'out'),
       isActive: device.isActiveByDefault || false
     };
-    console.log(colors.grey("[INFO] Initializing", JSON.stringify(_toObject(sprinkler))));
+    logger.info("Initializing", JSON.stringify(_toObject(sprinkler)));
     sprinkler.gpio.writeSync(sprinkler.isActive?0:1);
     sprinklers.push(sprinkler);
   }
-  console.log(colors.grey("[INFO] Initialized", sprinklers.length, "sprinklers"));
+  logger.info("Initialized", sprinklers.length, "sprinklers");
 }
 
 /*
@@ -98,10 +128,6 @@ var init = () => {
 const matchSprinkler = function(sprinkler) {
   return sprinkler.id === Number(this);
 };
-
-const plotDate = () => {
-  return new Date().toISOString();
-}
 
 // list all sprinklers on GET /
 app.get('/', function(req, res) {
@@ -145,15 +171,17 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
     res.status(400);
     return res.json({error : err.message});
   }
-  //else lets return the sprinkler
+  // else lets return the sprinkler
   var sprinkler = sprinklers.find(matchSprinkler, req.params.id);
 
+  // fi no sprinler was found, retun an error
   if (!sprinkler) {
     var err = new Error('Object not found');
     res.status(404);
     return res.json({error : err.message});
   }
 
+  // check for changes in isActive state, set the GPIO and set the response code to 200
   var isActive = (req.body.isActive === true) || (req.body.isactive === true);
   if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
@@ -161,23 +189,26 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
     res.status(200);
   }
 
+  // check for name changes
   if(req.body.hasOwnProperty('name')) {
     sprinkler.name = req.body.name;
     res.status(200);
   }
 
+  // if everything was sucessfully processed, send 200 repsonse
   if (res.statusCode === 200) {
-    console.log(colors.grey(plotDate(), "[LOG]"), "new gpio state:", _toObject(sprinkler));
+    logger.log("new gpio state:", _toObject(sprinkler));
     return res.json(_toObject(sprinkler));
   }
 
+  // There was nothing found to process in the body
   var err = new Error('No processable payload in request body');
   res.status(400);
   return res.json({error : err.message});
 });
 
 var server = app.listen(process.env.PORT || conf.port || 3000, () => {
-  console.log(colors.green("[INFO]"), "Server running on PORT", server.address().port);
+  logger.log("Server running on PORT", server.address().port);
 });
 
 
