@@ -8,7 +8,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     logger = require("./logger"),
     cjson = require('cjson'),
-    events = require('./firebase'),
+    events = require('./events'),
     Gpio;                    // Constructor function for Gpio objects.
 
 /// mock gpio
@@ -80,15 +80,20 @@ const _toObject = (device) => {
   }
 }
 
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
 // inits
 var sprinklers = [];
 var init = () => {
   logger.info("Initializing sprinkler pins.");
   for (var i = 0; i < conf.devices.length; i++) {
     var device = conf.devices[i];
+    var id = (device.id || getRandomInt(1e8,1e10));
     var sprinkler = {
-      uri: '/' + path.join(SPRINKLER_BASE_URI, (device.id || i).toString()),
-      id: device.id || i,
+      uri: '/' + path.join(SPRINKLER_BASE_URI, id.toString()),
+      id: id,
       name: device.name,
       gpio: new Gpio(device.gpio, 'out'),
       isActive: device.isActiveByDefault || false,
@@ -167,6 +172,18 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
   if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
     sprinkler.gpio.writeSync(isActive ? 0 : 1);
+
+    // log
+    if (isActive && !sprinkler.startedAt) {
+      sprinkler.startedAt = Date.now();
+    }
+    else {
+      var end = Date.now();
+      var duration = end-sprinkler.startedAt;
+      events.push(sprinkler.id.toString(), sprinkler.sprinklingRateLitersPerSecond * (duration/1000), Math.floor(duration/1000));
+      delete sprinkler.startedAt;
+    }
+
     res.status(200);
   }
 
