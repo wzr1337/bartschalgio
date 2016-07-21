@@ -6,39 +6,9 @@ var express = require('express'),
     app = express(),
     path = require('path'),
     bodyParser = require('body-parser'),
-    colors = require('colors'),
+    logger = require("./logger"),
     cjson = require('cjson'),
     Gpio;                    // Constructor function for Gpio objects.
-
-
-const logger = (function () {
-  const plotDate = () => {
-    return new Date().toISOString();
-  }
-
-  return {
-    log: function() {
-        var args = Array.prototype.slice.call(arguments);
-        args.unshift(colors.white(plotDate(), "[LOG]"));
-        console.log.apply(console, args);
-    },
-    warn: function() {
-        var args = Array.prototype.slice.call(arguments);
-        args.unshift(colors.yellow(plotDate(), "[WARN]"));
-        console.warn.apply(console, args);
-    },
-    info: function() {
-        var args = Array.prototype.slice.call(arguments);
-        args.unshift(colors.grey(plotDate(), "[INFO]"));
-        console.warn.apply(console, args);
-    },
-    error: function() {
-        var args = Array.prototype.slice.call(arguments);
-        args.unshift(colors.red(plotDate(), "[ERROR]"));
-        console.error.apply(console, args);
-    }
-  }
-}());
 
 /// mock gpio
 function GpioMock(gpio, direction) {
@@ -85,18 +55,19 @@ app.use(function(req, res, next) {
 
 
 /*
- * Filter the sprinkler object for serialization
+ * Filter the device object for serialization
  *
  * @param spinkler [object] the sprinkler object
  * @returns the filtered object
  */
-const _toObject = (sprinkler) => {
+const _toObject = (device) => {
   return {
-    uri: sprinkler.uri,
-    id: sprinkler.id,
-    name: sprinkler.name,
-    gpio: sprinkler.gpio.gpio,
-    isActive: sprinkler.isActive
+    uri: device.uri,
+    id: device.id,
+    name: device.name,
+    gpio: device.gpio.gpio,
+    isActive: device.isActive,
+    sprinklingRateLitersPerSecond: device.sprinklingRateLitersPerSecond
   }
 }
 
@@ -107,11 +78,12 @@ var init = () => {
   for (var i = 0; i < conf.devices.length; i++) {
     var device = conf.devices[i];
     var sprinkler = {
-      uri: '/' + path.join(SPRINKLER_BASE_URI, i.toString()),
-      id: i,
+      uri: '/' + path.join(SPRINKLER_BASE_URI, (device.id || i).toString()),
+      id: device.id || i,
       name: device.name,
       gpio: new Gpio(device.gpio, 'out'),
-      isActive: device.isActiveByDefault || false
+      isActive: device.isActiveByDefault || false,
+      sprinklingRateLitersPerSecond: device.sprinklingRateLitersPerSecond || 0
     };
     logger.info("Initializing", JSON.stringify(_toObject(sprinkler)));
     sprinkler.gpio.writeSync(sprinkler.isActive?0:1);
@@ -125,8 +97,8 @@ var init = () => {
  *
  * @returns true if sprinkler matches input
  */
-const matchSprinkler = function(sprinkler) {
-  return sprinkler.id === Number(this);
+const matchSprinkler = function(device) {
+  return device.id === Number(this);
 };
 
 // list all sprinklers on GET /
