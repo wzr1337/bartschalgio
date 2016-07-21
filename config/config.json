@@ -32,7 +32,7 @@
     }, {
         "id" : 7755300021,
         "name": "side",
-        "gpio": 21,
+        "gpio": 27,
         "isActivebyDefault": false,
         "sprinklingRateLitersPerSecond": 0.4545454545
     }, {
