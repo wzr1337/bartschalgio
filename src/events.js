@@ -19,6 +19,15 @@ router.get('/', function(req, res) {
   var fromTime = parseInt(req.query.from); //timestamp
   var toTime = parseInt(req.query.to); //timestamp
   var sprinkler = req.query.spinkler;
+  if (!sprinkler) {
+    var err = new Error("Missing query parameter 'sprinkler'. E.g. '/events/?spinkler=123456789&from=1469134153708&to=1469134157269'");
+    res.status(400);
+    res.json({
+      status: "error",
+      message: err.message
+    });
+    return;
+  }
 
   // build a query
   var sprinklerEvents = ref.orderByChild("timestamp");
@@ -33,13 +42,21 @@ router.get('/', function(req, res) {
   sprinklerEvents.once('value', (snapshot) => {
     // client side filtering for values
     var events = snapshot.val();
+    var _events = [];
     for (var key in events) {
       var e = events[key];
       if (e.sprinkler !== sprinkler) {
         delete events[key];
       }
+      else {
+        _events.push(events[key]);
+      }
     }
-    res.json(events);
+    const ret = {
+      status: "ok",
+      data: (null === events) ? [] : _events
+    }
+    res.json(ret);
   });
 });
 
