@@ -4,7 +4,7 @@ var firebase = require("firebase"),
     express = require('express'),
     router = express.Router();
 
-const REFNAME = (process.NODE_ENV === "production") ? "events" : "dev_events"
+const REFNAME = (process.env.NODE_ENV === 'production') ? "events" : "dev_events"
 
 firebase.initializeApp({
   serviceAccount: path.join(__dirname, "../config/firebase.json"),
