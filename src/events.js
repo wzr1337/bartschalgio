@@ -11,7 +11,7 @@ firebase.initializeApp({
 
 // As an admin, the app has access to read and write all data, regardless of Security Rules
 var db = firebase.database();
-var ref = db.ref("sprinklertimes");
+var ref = db.ref("events");
 
 router.get('/', function(req, res) {
   // http://nerderiagarden:3000/events/?spinkler=someId&from=1469134153708&to=1469134157269
@@ -30,7 +30,7 @@ router.get('/', function(req, res) {
   }
 
   // build a query
-  var sprinklerEvents = ref.orderByChild("timestamp");
+  var sprinklerEvents = ref.orderByChild("start");
   if (fromTime) {
     sprinklerEvents = sprinklerEvents.startAt(fromTime);
   }
@@ -60,12 +60,12 @@ router.get('/', function(req, res) {
   });
 });
 
-var pushEvent = (sprinkler, volume, duration) => {
+var pushEvent = (sprinkler, volume, start, end) => {
   logger.log("setting")
   var eventRef = ref.push();
   eventRef.update({
-    timestamp: firebase.database.ServerValue.TIMESTAMP,
-    durationInSeconds: duration,
+    end: end,
+    start: start,
     sprinkler: sprinkler,
     volumeInLiters: volume
   }).then(() => {

@@ -178,9 +178,7 @@ app.post('/' + path.join(SPRINKLER_BASE_URI, ':id?'), (req, res) => {
       sprinkler.startedAt = Date.now();
     }
     else {
-      var end = Date.now();
-      var duration = end-sprinkler.startedAt;
-      events.push(sprinkler.id.toString(), sprinkler.sprinklingRateLitersPerSecond * (duration/1000), Math.floor(duration/1000));
+      events.push(sprinkler.id.toString(), sprinkler.sprinklingRateLitersPerSecond, sprinkler.startedAt, Date.now());
       delete sprinkler.startedAt;
     }
 
