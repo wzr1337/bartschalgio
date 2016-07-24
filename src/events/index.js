@@ -1,13 +1,14 @@
 var firebase = require("firebase"),
-    logger = require("./logger"),
+    logger = require("../lib/logger"),
     path = require("path"),
     express = require('express'),
     router = express.Router();
 
-const REFNAME = (process.env.NODE_ENV === 'production') ? "events" : "dev_events"
+const REFNAME = (process.env.NODE_ENV === 'production') ? "events" : "dev_events";
+const FIREBASECONFIG = path.join(__dirname, "../../config/firebase.json");
 
 firebase.initializeApp({
-  serviceAccount: path.join(__dirname, "../config/firebase.json"),
+  serviceAccount: FIREBASECONFIG,
   databaseURL: "https://bartschlagio.firebaseio.com/"
 });
 

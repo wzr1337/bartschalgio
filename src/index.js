@@ -6,7 +6,7 @@ var express = require('express'),
     app = express(),
     path = require('path'),
     bodyParser = require('body-parser'),
-    logger = require("./logger"),
+    logger = require("./lib/logger"),
     cjson = require('cjson'),
     events = require('./events'),
     Gpio;                    // Constructor function for Gpio objects.
