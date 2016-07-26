@@ -54,7 +54,8 @@ const _toObject = (device) => {
     name: device.name,
     gpio: device.gpio.gpio,
     isActive: device.isActive,
-    sprinklingRateLitersPerSecond: device.sprinklingRateLitersPerSecond
+    sprinklingRateLitersPerSecond: device.sprinklingRateLitersPerSecond,
+    autoShutOffSeconds: device.autoShutOffSeconds
   }
 }
 
@@ -75,7 +76,8 @@ var init = () => {
       name: device.name,
       gpio: new Gpio(device.gpio, 'out'),
       isActive: device.isActiveByDefault || false,
-      sprinklingRateLitersPerSecond: device.sprinklingRateLitersPerSecond || 0
+      sprinklingRateLitersPerSecond: device.sprinklingRateLitersPerSecond || 0,
+      autoShutOffSeconds: device.autoShutOffSeconds || 0
     };
     logger.info("Initializing", JSON.stringify(_toObject(sprinkler)));
     sprinkler.gpio.writeSync(sprinkler.isActive?0:1);
@@ -138,15 +140,32 @@ router.post('/:id?', (req, res) => {
   var isActive = (req.body.isActive === true) || (req.body.isactive === true);
   if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
-    sprinkler.gpio.writeSync(isActive ? 0 : 1);
 
-    // log
-    if (isActive && !sprinkler.startedAt) {
-      sprinkler.startedAt = Date.now();
-    }
-    else {
+    function endSprinkling(sprinkler) {
+      logger.info("Automatically shutting off sprinkler", sprinkler.id);
+      //make sure the timeout is not running anymore
+      clearTimeout(sprinkler.shutOffTimeOut);
       events.push(sprinkler.id.toString(), sprinkler.sprinklingRateLitersPerSecond, sprinkler.startedAt, Date.now());
       delete sprinkler.startedAt;
+      sprinkler.gpio.writeSync(1);
+    }
+
+    if (isActive && !sprinkler.startedAt) {
+      // start sprinkling
+      sprinkler.startedAt = Date.now();
+      sprinkler.gpio.writeSync(0);
+
+      // automatically shutOff the sprinkler after configured time
+      if (sprinkler.autoShutOffSeconds > 0) {
+        clearTimeout(sprinkler.shutOffTimeOut);
+        sprinkler.shutOffTimeOut = setTimeout(() => {
+          endSprinkling(sprinkler);
+        }, sprinkler.autoShutOffSeconds * 1000)
+      }
+    }
+    else {
+      // end immediately
+      endSprinkling(sprinkler);
     }
 
     res.status(200);

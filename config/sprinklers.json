@@ -3,31 +3,36 @@
     "name": "general",
     "gpio": 2,
     "isActivebyDefault": false,
-    "sprinklingRateLitersPerSecond": 1
+    "sprinklingRateLitersPerSecond": 1,
+    "autoShutOffSeconds": 4
 }, {
     "id" : 7755300003,
     "name": "backyard",
     "gpio": 3,
     "isActivebyDefault": false,
-    "sprinklingRateLitersPerSecond": 0.3703703704
+    "sprinklingRateLitersPerSecond": 0.3703703704,
+    "autoShutOffSeconds": 1800
 }, {
     "id" : 7755300004,
     "name": "frontyard",
     "gpio": 4,
     "isActivebyDefault": false,
-    "sprinklingRateLitersPerSecond": 0.2173913043
+    "sprinklingRateLitersPerSecond": 0.2173913043,
+    "autoShutOffSeconds": 1500
 }, {
     "id" : 7755300017,
     "name": "terrace",
     "gpio": 17,
     "isActivebyDefault": false,
-    "sprinklingRateLitersPerSecond": 0.3448275862
+    "sprinklingRateLitersPerSecond": 0.3448275862,
+    "autoShutOffSeconds": 1200
 }, {
     "id" : 7755300021,
     "name": "side",
     "gpio": 27,
     "isActivebyDefault": false,
-    "sprinklingRateLitersPerSecond": 0.4545454545
+    "sprinklingRateLitersPerSecond": 0.4545454545,
+    "autoShutOffSeconds": 1200
 }, {
     "id" : 7755300022,
     "name": "",
