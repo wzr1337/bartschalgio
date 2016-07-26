@@ -64,7 +64,11 @@ router.get('/', function(req, res) {
 });
 
 var pushEvent = (sprinkler, volume, start, end) => {
-  logger.log("setting")
+  if(!sprinkler || !volume || !start || !end) {
+    var err = new Error("Some properties undefined, can not push");
+    logger.error(err.message);
+    return;
+  }
   var eventRef = ref.push();
   eventRef.update({
     end: end,
