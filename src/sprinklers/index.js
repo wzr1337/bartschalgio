@@ -138,16 +138,22 @@ router.post('/:id?', (req, res) => {
 
   // check for changes in isActive state, set the GPIO and set the response code to 200
   var isActive = (req.body.isActive === true) || (req.body.isactive === true);
+
+  if (sprinkler.isActive === isActive) {
+    logger.info("Doing nothing, current state", sprinkler.isActive, "equals desired state", isActive);
+    return;
+  }
+
   if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
 
     function endSprinkling(sprinkler) {
-      logger.info("Automatically shutting off sprinkler", sprinkler.id);
       //make sure the timeout is not running anymore
       clearTimeout(sprinkler.shutOffTimeOut);
       events.push(sprinkler.id.toString(), sprinkler.sprinklingRateLitersPerSecond, sprinkler.startedAt, Date.now());
       delete sprinkler.startedAt;
       sprinkler.gpio.writeSync(1);
+      sprinkler.isActive = false; // make sure it is set to false, even if it already is
     }
 
     if (isActive && !sprinkler.startedAt) {
@@ -159,12 +165,14 @@ router.post('/:id?', (req, res) => {
       if (sprinkler.autoShutOffSeconds > 0) {
         clearTimeout(sprinkler.shutOffTimeOut);
         sprinkler.shutOffTimeOut = setTimeout(() => {
+          logger.info("Automatic sprinkler shut off:", sprinkler.id);
           endSprinkling(sprinkler);
-        }, sprinkler.autoShutOffSeconds * 1000)
+        }, sprinkler.autoShutOffSeconds * 1000);
       }
     }
     else {
       // end immediately
+      logger.info("Manual sprinkler shut off:", sprinkler.id);
       endSprinkling(sprinkler);
     }
 

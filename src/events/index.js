@@ -64,11 +64,27 @@ router.get('/', function(req, res) {
 });
 
 var pushEvent = (sprinkler, volume, start, end) => {
-  if(!sprinkler || !volume || !start || !end) {
-    var err = new Error("Some properties undefined, can not push");
-    logger.error(err.message);
+  var err = [];
+  if(!sprinkler) {
+    err.push(new Error("`sprinkler` parameter undefined, can not push"));
+  }
+  if(!volume) {
+    err.push(new Error("`volume` parameter undefined, can not push"));
+  }
+  if(!start) {
+    err.push(new Error("`start` parameter undefined, can not push"));
+  }
+  if(!end) {
+    err.push(new Error("`end` parameter undefined, can not push"));
+  }
+  if (err.length > 0) {
+    for (var i = 0; i < err.length; i++) {
+      logger.error(err[i].message);
+    }
     return;
   }
+
+
   var eventRef = ref.push();
   eventRef.update({
     end: end,
