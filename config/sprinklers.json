@@ -24,12 +24,13 @@
     "name": "terrace",
     "gpio": 17,
     "isActivebyDefault": false,
-    "sprinklingRateLitersPerSecond": 0.3448275862,
+    "sprinklingRateLitersPerSecond": 0.7993730407,
+    "note":"0.4545454545 for side + 0.3448275862 for terace",
     "autoShutOffSeconds": 1200
 }, {
     "id" : 7755300021,
     "name": "side",
-    "gpio": 27,
+    "gpio": 22,
     "isActivebyDefault": false,
     "sprinklingRateLitersPerSecond": 0.4545454545,
     "autoShutOffSeconds": 1200
