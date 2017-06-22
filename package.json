@@ -9,6 +9,8 @@
     "colors": "^1.1.2",
     "express": "^4.13.4",
     "firebase": "^3.2.0",
+    "jsonfile": "^3.0.0",
+    "md5": "^2.2.1",
     "onoff": "^1.1.1",
     "pi-gpio": "^0.0.8"
   },
@@ -17,7 +19,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "develop": "nodemon src/app.js"
+    "develop": "nodemon src/index.js"
   },
   "author": "Dr. Patrick Bartsch <bartsch98@gmail.com>",
   "license": "UNLICENSED"

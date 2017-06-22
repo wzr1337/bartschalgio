@@ -8,10 +8,11 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     logger = require("./lib/logger"),
     cjson = require('cjson'),
+    auth = require('./auth'),
     events = require('./events'),
     sprinklers = require('./sprinklers');
 
-const conf = cjson.load(path.join(__dirname, "../config/config.json"));
+const conf = cjson.load(path.join(__dirname, "../config/server.json"));
 
 //settings
 const SPRINKLER_BASE_URI = 'sprinklers';
@@ -27,6 +28,9 @@ app.use(function(req, res, next) {
   next();
 });
 
+// nano Auth
+app.use(auth.authorize('/auth'));
+
 // log queries
 app.use((req, res, next) => {
   logger.info(req.method, req.originalUrl);
@@ -38,6 +42,8 @@ var routes = [];
 app.use('/events', events.routes);
 // include the sprinlers route
 app.use('/sprinklers', sprinklers.routes);
+// include the sprinlers route
+app.use('/auth', auth.routes);
 
 
 // list all sprinklers on GET /
