@@ -5,6 +5,9 @@ var express = require('express'),
     hostname = os.hostname(),
     app = express(),
     path = require('path'),
+    fs = require('fs'),
+    http = require('http'),
+    https = require('https'),
     bodyParser = require('body-parser'),
     logger = require("./lib/logger"),
     cjson = require('cjson'),
@@ -54,8 +57,23 @@ app.get('/', function(req, res) {
   res.json(services);
 });
 
-var server = app.listen(process.env.PORT || conf.port || 3000, () => {
-  logger.log("Server running on PORT", server.address().port);
+//var server = app.listen(process.env.PORT || conf.port || 3000, () => {
+//  logger.log("Server running on PORT", server.address().port);
+//});
+
+
+var privateKey  = fs.readFileSync("/etc/letsencrypt/live/nerderia.dedyn.io/privkey.pem");
+var certificate = fs.readFileSync("/etc/letsencrypt/live/nerderia.dedyn.io/fullchain.pem");
+
+var credentials = {key: privateKey, cert: certificate};
+
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer(credentials, app);
+httpsServer.listen(8443, () => {
+  logger.log("HTTPS Server running on PORT", httpsServer.address().port);
+})
+httpServer.listen(process.env.PORT || conf.port || 3000, () => {
+  logger.log("HTTP Server running on PORT", httpServer.address().port);
 });
 
 
