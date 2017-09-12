@@ -19,7 +19,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "develop": "nodemon src/index.js"
+    "develop": "nodemon src/index.js",
+    "server": "node src/index.js"
   },
   "author": "Dr. Patrick Bartsch <bartsch98@gmail.com>",
   "license": "UNLICENSED"
