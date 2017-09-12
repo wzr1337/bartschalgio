@@ -37,7 +37,4 @@ jspm_packages
 .node_repl_history
 
 #config
-config/firebase.json
-
-#auth
-config/auth.json
+config/*.json
