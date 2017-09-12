@@ -68,8 +68,8 @@ app.get('/', function(req, res) {
 //});
 
 
-var privateKey  = fs.readFileSync("/etc/letsencrypt/live/nerderia.dedyn.io/privkey.pem");
-var certificate = fs.readFileSync("/etc/letsencrypt/live/nerderia.dedyn.io/fullchain.pem");
+var privateKey  = fs.readFileSync(conf.https.privateKey);
+var certificate = fs.readFileSync(conf.https.publicKey);
 
 var credentials = {key: privateKey, cert: certificate};
 
