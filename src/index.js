@@ -32,7 +32,7 @@ app.use(function(req, res, next) {
 });
 
 // nano Auth
-app.use(auth.authorize('/auth'));
+// app.use(auth.authorize('/auth'));
 
 // log queries
 app.use((req, res, next) => {
@@ -75,7 +75,7 @@ var credentials = {key: privateKey, cert: certificate};
 
 var httpServer = http.createServer(app);
 var httpsServer = https.createServer(credentials, app);
-httpsServer.listen(8443, () => {
+httpsServer.listen(process.env.HTTPS_PORT || conf.https.port || 8443, () => {
   logger.log("HTTPS Server running on PORT", httpsServer.address().port);
 })
 httpServer.listen(process.env.PORT || conf.port || 3000, () => {

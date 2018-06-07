@@ -10,7 +10,6 @@ var express = require('express'),
     logger = require("../lib/logger");
 
 
-const SALT = 'bartschlagio';
 const AUTHFILE = path.join(__dirname, "../../config/auth.json");
 const auth = jsonfile.readFileSync(AUTHFILE);
 jsonfile.spaces= 2; //configure jsonfile
@@ -46,7 +45,7 @@ function decodeAuthorizationHeader(auth) {
 }
 
 function checkPassword(password, hash) {
-  return md5(SALT + password) === hash;
+  return md5(auth.salt + password) === hash;
 }
 
 function randomString(length) {

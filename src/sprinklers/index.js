@@ -55,7 +55,10 @@ const _toObject = (device) => {
     gpio: device.gpio.gpio,
     isActive: device.isActive,
     sprinklingRateLitersPerSecond: device.sprinklingRateLitersPerSecond,
-    autoShutOffSeconds: device.autoShutOffSeconds
+    autoShutOffSeconds: device.autoShutOffSeconds,
+    autoEndsAt: device.autoEndsAt,
+    startedAt: device.startedAt,
+    remaining: device.autoEndsAt- Date.now()
   }
 }
 
@@ -141,7 +144,8 @@ router.post('/:id?', (req, res) => {
 
   if (sprinkler.isActive === isActive) {
     logger.info("Doing nothing, current state", sprinkler.isActive, "equals desired state", isActive);
-    return;
+    res.status(200);
+    return res.json(_toObject(sprinkler));
   }
 
   if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
@@ -152,6 +156,7 @@ router.post('/:id?', (req, res) => {
       clearTimeout(sprinkler.shutOffTimeOut);
       events.push(sprinkler.id.toString(), sprinkler.sprinklingRateLitersPerSecond, sprinkler.startedAt, Date.now());
       delete sprinkler.startedAt;
+      delete sprinkler.autoEndsAt;
       sprinkler.gpio.writeSync(1);
       sprinkler.isActive = false; // make sure it is set to false, even if it already is
     }
@@ -159,6 +164,7 @@ router.post('/:id?', (req, res) => {
     if (isActive && !sprinkler.startedAt) {
       // start sprinkling
       sprinkler.startedAt = Date.now();
+      sprinkler.autoEndsAt = sprinkler.startedAt + (sprinkler.autoShutOffSeconds * 1000);
       sprinkler.gpio.writeSync(0);
 
       // automatically shutOff the sprinkler after configured time
@@ -173,6 +179,8 @@ router.post('/:id?', (req, res) => {
     else {
       // end immediately
       logger.info("Manual sprinkler shut off:", sprinkler.id);
+      delete sprinkler.startedAt;
+      delete sprinkler.autoEndsAt;
       endSprinkling(sprinkler);
     }
 
