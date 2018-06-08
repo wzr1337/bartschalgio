@@ -1,6 +1,6 @@
 {
   "name": "bartschlaggio",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The sprinkler DYI project",
   "main": "index.js",
   "dependencies": {
