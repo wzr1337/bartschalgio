@@ -1,0 +1,17 @@
+[{
+  "id": 5577300001,
+  "name": "all-in",
+  "timeline": [{
+      "sprinkler": 7755300003,
+      "runtimeSeconds": 1800
+    },
+    {
+      "sprinkler": 7755300017,
+      "runtimeSeconds": 900
+    },
+    {
+      "sprinkler": 7755300004,
+      "runtimeSeconds": 1800
+    }
+  ]
+}]

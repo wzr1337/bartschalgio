@@ -1,31 +1,17 @@
 var express = require('express'),
     sprinklers = require('../sprinklers'),
+    path = require('path'),
+    logger = require("../lib/logger"),
+    cjson = require('cjson'),
     router = express.Router();
 
+const scenes = cjson.load(path.join(__dirname, "../../config/scenes.json"));
+const BASE_URI = 'scenes';
 
-const scenes = [
-  {
-    id: 5577300001,
-    uri: "/scenes/5577300001",
-    name: "all-in",
-    isActive: false,
-    currentSprinkler: 0,
-    timeline: [
-      {
-        sprinkler: 7755300003,
-        runtimeSeconds: 1800
-      },
-      {
-        sprinkler: 7755300017,
-        runtimeSeconds: 900
-      },
-      {
-        sprinkler: 7755300004,
-        runtimeSeconds: 1800
-      }
-    ]
-  }
-]
+for (const scene of scenes) {
+  scene.uri = "/" + BASE_URI + "/" + scene.id,
+  scene.isActive = false;
+}
 
 /*
  * A matcher function for spinkler matching
@@ -79,6 +65,7 @@ router.post('/:id?', (req, res) => {
   }
   // get the actual status
   if (req.body.hasOwnProperty("isActive")) {
+    logger.info("Setting scene isActive flag to", req.body.isActive);
     if (req.body.isActive === true) {
         scene.isActive = true;
         scene.currentSprinkler = 0;
@@ -97,7 +84,7 @@ router.post('/:id?', (req, res) => {
           clearTimeout(scene.timeout);
           delete scene.timeout;
         });
-        scene.currentSprinkler = 0;
+        delete scene.currentSprinkler;
         res.status(200);
         return res.json(scene);
     }
