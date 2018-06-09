@@ -122,16 +122,17 @@ router.get('/:id?', (req, res) => {
   return res.json(_toObject(sprinkler));
 });
 
-router.post('/:id?', (req, res) => {
+router.post('/:id?', (req, res, next) => {
   if(!req.params.id) {
     // send a list of all sprinklers
     var err = new Error("You can not create sprinklers.. I mean.. how would you?");
     res.status(400);
     return res.json({error : err.message});
   }
-  const ret = changeSprinklerState(req.params.id, req.body);
-  res.status(ret.status);
-  return res.json(ret.body);
+  changeSprinklerState(req.params.id, req.body).then((ret) => {
+    res.status(ret.status);
+    return res.json(ret.body);
+  })
 });
 
 async function changeSprinklerState(id, states) {

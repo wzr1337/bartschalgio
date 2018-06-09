@@ -21,6 +21,7 @@ const conf = cjson.load(path.join(__dirname, "../config/server.json"));
 //settings
 const SPRINKLER_BASE_URI = 'sprinklers';
 const EVENTS_BASE_URI = 'events';
+const SCENES_BASE_URI = 'scenes';
 
 // parse application/json
 app.use(bodyParser.json())
@@ -60,6 +61,9 @@ app.get('/', function(req, res) {
     },
     [EVENTS_BASE_URI] : {
       uri: '/' + EVENTS_BASE_URI + '/'
+    }, 
+    [SCENES_BASE_URI]: {
+      uri: '/' + SCENES_BASE_URI + '/'
     }
   }
   res.status(200);
