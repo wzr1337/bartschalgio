@@ -4,5 +4,10 @@
  */
 {
     "host": "0.0.0.0",
-    "port": "3000"
+    "port": "3000",
+    "https": {
+        "port": "8443",
+        "privateKey": "/etc/letsencrypt/live/nerderia.dedyn.io/privkey.pem",
+        "publicKey": "/etc/letsencrypt/live/nerderia.dedyn.io/fullchain.pem"
+    }
 }

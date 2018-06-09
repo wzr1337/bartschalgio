@@ -13,6 +13,7 @@ var express = require('express'),
     cjson = require('cjson'),
     auth = require('./auth'),
     events = require('./events'),
+    scenes = require('./scenes'),
     sprinklers = require('./sprinklers');
 
 const conf = cjson.load(path.join(__dirname, "../config/server.json"));
@@ -47,6 +48,8 @@ app.use('/events', events.routes);
 app.use('/sprinklers', sprinklers.routes);
 // include the sprinlers route
 app.use('/auth', auth.routes);
+// include the scenes route
+app.use('/scenes', scenes.routes);
 
 
 // list all sprinklers on GET /

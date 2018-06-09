@@ -129,26 +129,41 @@ router.post('/:id?', (req, res) => {
     res.status(400);
     return res.json({error : err.message});
   }
+  const ret = changeSprinklerState(req.params.id, req.body);
+  res.status(ret.status);
+  return res.json(ret.body);
+});
+
+async function changeSprinklerState(id, states) {
   // else lets return the sprinkler
-  var sprinkler = sprinklers.find(matchSprinkler, req.params.id);
+  var sprinkler = sprinklers.find(matchSprinkler, id);
+  var statusCode;
+
+  logger.info(`changeSprinklerState(${id})`);
 
   // fi no sprinler was found, retun an error
   if (!sprinkler) {
     var err = new Error('Object not found');
-    res.status(404);
-    return res.json({error : err.message});
+    return {
+      status: 404,
+      body: {
+        error: err.message
+      }
+    };
   }
 
   // check for changes in isActive state, set the GPIO and set the response code to 200
-  var isActive = (req.body.isActive === true) || (req.body.isactive === true);
+  var isActive = (states.isActive === true) || (states.isactive === true);
 
   if (sprinkler.isActive === isActive) {
     logger.info("Doing nothing, current state", sprinkler.isActive, "equals desired state", isActive);
-    res.status(200);
-    return res.json(_toObject(sprinkler));
+    return {
+      status: 200,
+      body: _toObject(sprinkler)
+    }
   }
 
-  if(req.body.hasOwnProperty('isActive') || req.body.hasOwnProperty('isactive')) {
+  if (states.hasOwnProperty('isActive') || states.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
 
     function endSprinkling(sprinkler) {
@@ -175,8 +190,7 @@ router.post('/:id?', (req, res) => {
           endSprinkling(sprinkler);
         }, sprinkler.autoShutOffSeconds * 1000);
       }
-    }
-    else {
+    } else {
       // end immediately
       logger.info("Manual sprinkler shut off:", sprinkler.id);
       delete sprinkler.startedAt;
@@ -184,28 +198,36 @@ router.post('/:id?', (req, res) => {
       endSprinkling(sprinkler);
     }
 
-    res.status(200);
+    statusCode = 200;
   }
 
   // check for name changes
-  if(req.body.hasOwnProperty('name')) {
-    sprinkler.name = req.body.name;
-    res.status(200);
+  if (states.hasOwnProperty('name')) {
+    sprinkler.name = states.name;
+    statusCode = 200;
   }
 
   // if everything was sucessfully processed, send 200 repsonse
-  if (res.statusCode === 200) {
+  if (statusCode === 200) {
     logger.log("new gpio state:", _toObject(sprinkler));
-    return res.json(_toObject(sprinkler));
+    return {
+      status: statusCode,
+      body: _toObject(sprinkler)
+    };
   }
 
   // There was nothing found to process in the body
   var err = new Error('No processable payload in request body');
-  res.status(400);
-  return res.json({error : err.message});
-});
+  return {
+    status: 400,
+    body: {
+    error: err.message
+    }
+  };
+}
 
 module.exports = {
   routes: router,
+  changeSprinklerState: changeSprinklerState,
   init: init
 };
