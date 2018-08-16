@@ -78,7 +78,7 @@ router.post('/:id?', (req, res) => {
     }
     else {
         scene.isActive = false;
-        sprinklers.changeSprinklerState(scene.timeline[scene.currentSprinkler].sprinkler, {
+        sprinklers.setSprinklerState(scene.timeline[scene.currentSprinkler].sprinkler, {
           isActive: false
         }).then(() => {
           clearTimeout(scene.timeout);
@@ -106,12 +106,12 @@ async function nextSprinkler(scene) {
   const sprinkler = scene.timeline[scene.currentSprinkler];
   console.log(sprinkler.sprinkler)
   // switch it on
-  await sprinklers.changeSprinklerState(sprinkler.sprinkler, {
+  await sprinklers.setSprinklerState(sprinkler.sprinkler, {
       isActive: true
     });
   return setTimeout(async () => {
     // switch it off
-    await sprinklers.changeSprinklerState(sprinkler.sprinkler, { isActive: false });
+    await sprinklers.setSprinklerState(sprinkler.sprinkler, { isActive: false });
     scene.currentSprinkler++;
     scene.setTimeout = nextSprinkler(scene);
   }, sprinkler.runtimeSeconds * 1000);

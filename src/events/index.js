@@ -1,20 +1,10 @@
-var firebase = require("firebase"),
+var firebase = require("../firebase"),
     logger = require("../lib/logger"),
-    path = require("path"),
     express = require('express'),
     router = express.Router();
 
 const REFNAME = (process.env.NODE_ENV === 'production') ? "events" : "dev_events";
-const FIREBASECONFIG = path.join(__dirname, "../../config/firebase.json");
-
-firebase.initializeApp({
-  serviceAccount: FIREBASECONFIG,
-  databaseURL: "https://bartschlagio.firebaseio.com/"
-});
-
-// As an admin, the app has access to read and write all data, regardless of Security Rules
-var db = firebase.database();
-var ref = db.ref(REFNAME);
+var ref = firebase.db.ref(REFNAME);
 
 router.get('/', function(req, res) {
   // http://nerderiagarden:3000/events/?spinkler=someId&from=1469134153708&to=1469134157269

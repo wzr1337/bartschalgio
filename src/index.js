@@ -75,16 +75,16 @@ app.get('/', function(req, res) {
 //});
 
 
-var privateKey  = fs.readFileSync(conf.https.privateKey);
-var certificate = fs.readFileSync(conf.https.publicKey);
+// var privateKey  = fs.readFileSync(conf.https.privateKey);
+// var certificate = fs.readFileSync(conf.https.publicKey);
 
-var credentials = {key: privateKey, cert: certificate};
+// var credentials = {key: privateKey, cert: certificate};
 
 var httpServer = http.createServer(app);
-var httpsServer = https.createServer(credentials, app);
-httpsServer.listen(process.env.HTTPS_PORT || conf.https.port || 8443, () => {
+// var httpsServer = https.createServer(credentials, app);
+/* httpsServer.listen(process.env.HTTPS_PORT || conf.https.port || 8443, () => {
   logger.log("HTTPS Server running on PORT", httpsServer.address().port);
-})
+}) */
 httpServer.listen(process.env.PORT || conf.port || 3000, () => {
   logger.log("HTTP Server running on PORT", httpServer.address().port);
 });

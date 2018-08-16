@@ -129,18 +129,26 @@ router.post('/:id?', (req, res, next) => {
     res.status(400);
     return res.json({error : err.message});
   }
-  changeSprinklerState(req.params.id, req.body).then((ret) => {
+  setSprinklerState(req.params.id, req.body).then((ret) => {
     res.status(ret.status);
     return res.json(ret.body);
   })
 });
 
-async function changeSprinklerState(id, states) {
+
+/**
+ * set Sprinkler state(s)
+ *
+ * @param {string} id the sprinklers id
+ * @param {object} states the sprinkler states {state?:Boolean, name?:String}
+ * @returns
+ */
+async function setSprinklerState(id, states) {
   // else lets return the sprinkler
   var sprinkler = sprinklers.find(matchSprinkler, id);
   var statusCode;
 
-  logger.info(`changeSprinklerState(${id})`);
+  logger.info(`setSprinklerState(${id})`);
 
   // fi no sprinler was found, retun an error
   if (!sprinkler) {
@@ -229,6 +237,6 @@ async function changeSprinklerState(id, states) {
 
 module.exports = {
   routes: router,
-  changeSprinklerState: changeSprinklerState,
+  setSprinklerState: setSprinklerState,
   init: init
 };
