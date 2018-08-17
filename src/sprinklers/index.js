@@ -1,9 +1,7 @@
 #! /usr/bin/env node
 
 var express = require('express'),
-    os = require("os"),
-    hostname = os.hostname(),
-    app = express(),
+    firebase = require("../firebase"),
     path = require('path'),
     logger = require("../lib/logger"),
     cjson = require('cjson'),
@@ -12,6 +10,8 @@ var express = require('express'),
     Gpio;
 
 const BASE_URI = 'sprinklers';
+const REFNAME = (process.env.NODE_ENV === 'production') ? "sprinklers" : "dev_sprinklers";
+var ref = firebase.db.ref(REFNAME);
 
 /// mock gpio
 function GpioMock(gpio, direction) {
@@ -65,11 +65,35 @@ const _toObject = (device) => {
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
+/**
+ * Register for changes on the sprinklers on firebase
+ *
+ */
+const registerFirebase =  () => {
+  ref.on('child_changed', async (snapshot) => {
+    const sprinkler = snapshot.toJSON();
+    logger.log(`${sprinkler.id}(${sprinkler.name}) was set remotely`);
+    await setSprinklerState(sprinkler.id, {
+      isActive: sprinkler.isActive
+    });
+  })
+}
+
 
 // inits
 var sprinklers = [];
 var init = () => {
   logger.info("Initializing sprinkler pins.");
+  registerFirebase();
+  // flush the sprinklers data to have unique entries
+  ref.remove()
+    .then(function() {
+      console.log("Remove succeeded.")
+    })
+    .catch(function(error) {
+      console.log("Remove failed: " + error.message)
+    });
+
   for (var i = 0; i < sprinklerConf.length; i++) {
     var device = sprinklerConf[i];
     var id = (device.id || getRandomInt(1e8,1e10));
@@ -84,6 +108,10 @@ var init = () => {
     };
     logger.info("Initializing", JSON.stringify(_toObject(sprinkler)));
     sprinkler.gpio.writeSync(sprinkler.isActive?0:1);
+    const fb_sprinkler = {id: sprinkler.id, isActive:sprinkler.isActive, name: sprinkler.name};
+    ref.push(fb_sprinkler).then(() => {
+      logger.info(`Registered ${fb_sprinkler.id}(${fb_sprinkler.name}) with the server`);
+    });
     sprinklers.push(sprinkler);
   }
   logger.info("Initialized", sprinklers.length, "sprinklers");
