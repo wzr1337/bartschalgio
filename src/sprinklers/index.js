@@ -11,7 +11,7 @@ var express = require('express'),
 
 const BASE_URI = 'sprinklers';
 const REFNAME = (process.env.NODE_ENV === 'production') ? "sprinklers" : "dev_sprinklers";
-var ref = firebase.db.ref(REFNAME);
+var sprinklersRef = firebase.db.ref(REFNAME);
 
 /// mock gpio
 function GpioMock(gpio, direction) {
@@ -69,12 +69,12 @@ function getRandomInt(min, max) {
  * Register for changes on the sprinklers on firebase
  *
  */
-const registerFirebase =  () => {
-  ref.on('child_changed', async (snapshot) => {
+const registerForFirebaseEvents =  () => {
+  sprinklersRef.on('child_changed', async (snapshot) => {
     const sprinkler = snapshot.toJSON();
     logger.log(`${sprinkler.id}(${sprinkler.name}) was set remotely`);
     await setSprinklerState(sprinkler.id, {
-      isActive: sprinkler.isActive
+      isActive: (sprinkler.state === "activating" || sprinkler.state === "on") ? true : false
     });
   })
 }
@@ -82,11 +82,11 @@ const registerFirebase =  () => {
 
 // inits
 var sprinklers = [];
-var init = () => {
+const init = async () => {
   logger.info("Initializing sprinkler pins.");
-  registerFirebase();
+  registerForFirebaseEvents();
   // flush the sprinklers data to have unique entries
-  ref.remove()
+  sprinklersRef.remove()
     .then(function() {
       console.log("Remove succeeded.")
     })
@@ -108,10 +108,14 @@ var init = () => {
     };
     logger.info("Initializing", JSON.stringify(_toObject(sprinkler)));
     sprinkler.gpio.writeSync(sprinkler.isActive?0:1);
-    const fb_sprinkler = {id: sprinkler.id, isActive:sprinkler.isActive, name: sprinkler.name};
-    ref.push(fb_sprinkler).then(() => {
-      logger.info(`Registered ${fb_sprinkler.id}(${fb_sprinkler.name}) with the server`);
+    const ref = await sprinklersRef.push({
+      id: sprinkler.id,
+      state: sprinkler.isActive? "on": "off",
+      name: sprinkler.name,
+      autoShutOffSeconds: sprinkler.autoShutOffSeconds
     });
+    sprinkler.fb_path = ref.toString().substring(ref.root.toString().length);
+    logger.info(`Registered ${sprinkler.id}(${sprinkler.name}) with the server`);
     sprinklers.push(sprinkler);
   }
   logger.info("Initialized", sprinklers.length, "sprinklers");
@@ -203,13 +207,19 @@ async function setSprinklerState(id, states) {
   if (states.hasOwnProperty('isActive') || states.hasOwnProperty('isactive')) {
     sprinkler.isActive = isActive;
 
-    function endSprinkling(sprinkler) {
+    async function endSprinkling(sprinkler) {
       //make sure the timeout is not running anymore
       clearTimeout(sprinkler.shutOffTimeOut);
       events.push(sprinkler.id.toString(), sprinkler.sprinklingRateLitersPerSecond, sprinkler.startedAt, Date.now());
       delete sprinkler.startedAt;
       delete sprinkler.autoEndsAt;
+      // set it shutdown
+      console.log(sprinkler)
+      await firebase.db.ref(sprinkler.fb_path).update({ state: "shutdown" });
+      // deactivate sprinkler
       sprinkler.gpio.writeSync(1);
+      // set it off
+      await firebase.db.ref(sprinkler.fb_path).update({ state: "off" });
       sprinkler.isActive = false; // make sure it is set to false, even if it already is
     }
 
@@ -217,7 +227,12 @@ async function setSprinklerState(id, states) {
       // start sprinkling
       sprinkler.startedAt = Date.now();
       sprinkler.autoEndsAt = sprinkler.startedAt + (sprinkler.autoShutOffSeconds * 1000);
+      // set it shutdown
+      await firebase.db.ref(sprinkler.fb_path).update({ state: "activating" });
+      // deactivate sprinkler
       sprinkler.gpio.writeSync(0);
+      // set it off
+      await firebase.db.ref(sprinkler.fb_path).update({ state: "on" });
 
       // automatically shutOff the sprinkler after configured time
       if (sprinkler.autoShutOffSeconds > 0) {

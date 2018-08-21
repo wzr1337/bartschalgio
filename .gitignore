@@ -43,3 +43,8 @@ config/*.json
 
 # Visual Studio
 .vscode
+
+# non raspi stuff
+functions
+www
+.firebase
