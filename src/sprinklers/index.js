@@ -214,7 +214,6 @@ async function setSprinklerState(id, states) {
       delete sprinkler.startedAt;
       delete sprinkler.autoEndsAt;
       // set it shutdown
-      console.log(sprinkler)
       await firebase.db.ref(sprinkler.fb_path).update({ state: "shutdown" });
       // deactivate sprinkler
       sprinkler.gpio.writeSync(1);

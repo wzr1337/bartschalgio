@@ -2,26 +2,23 @@
 
 var express = require('express'),
     os = require("os"),
-    hostname = os.hostname(),
     app = express(),
     path = require('path'),
-    fs = require('fs'),
     http = require('http'),
-    https = require('https'),
     bodyParser = require('body-parser'),
     logger = require("./lib/logger"),
     cjson = require('cjson'),
     auth = require('./auth'),
     events = require('./events'),
-    scenes = require('./scenes'),
+    scenarios = require('./scenarios'),
     sprinklers = require('./sprinklers');
 
 const conf = cjson.load(path.join(__dirname, "../config/server.json"));
 
 //settings
-const SPRINKLER_BASE_URI = 'sprinklers';
+const SPRINKLERS_BASE_URI = 'sprinklers';
 const EVENTS_BASE_URI = 'events';
-const SCENES_BASE_URI = 'scenes';
+const SCENARIOS_BASE_URI = 'scenarios';
 
 // parse application/json
 app.use(bodyParser.json())
@@ -46,24 +43,24 @@ var routes = [];
 // include the events route
 app.use('/events', events.routes);
 // include the sprinlers route
-app.use('/sprinklers', sprinklers.routes);
+app.use('/' + SPRINKLERS_BASE_URI, sprinklers.routes);
 // include the sprinlers route
 app.use('/auth', auth.routes);
 // include the scenes route
-app.use('/scenes', scenes.routes);
+app.use('/' + SCENARIOS_BASE_URI, scenarios.routes);
 
 
 // list all sprinklers on GET /
 app.get('/', function(req, res) {
   var services = {
-    [SPRINKLER_BASE_URI] : {
-      uri: '/' + SPRINKLER_BASE_URI + '/'
+    [SPRINKLERS_BASE_URI] : {
+      uri: '/' + SPRINKLERS_BASE_URI + '/'
     },
     [EVENTS_BASE_URI] : {
       uri: '/' + EVENTS_BASE_URI + '/'
     }, 
-    [SCENES_BASE_URI]: {
-      uri: '/' + SCENES_BASE_URI + '/'
+    [SCENARIOS_BASE_URI]: {
+      uri: '/' + SCENARIOS_BASE_URI + '/'
     }
   }
   res.status(200);
