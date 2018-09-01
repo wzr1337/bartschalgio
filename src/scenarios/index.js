@@ -151,7 +151,6 @@ async function setScenarioState(scenario, body) {
 function updateScenarioGlobally(scenario) {
   const index = scenarios.findIndex(matchScenario, scenario.id);
   scenarios[index] = scenario;
-  console.log(scenario, scenarios)
 }
 
 
