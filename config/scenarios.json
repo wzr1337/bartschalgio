@@ -1,0 +1,35 @@
+[{
+  "id": 5577300001,
+  "name": "all-in",
+  "timeline": [{
+      "sprinkler": 7755300003,
+      "runtimeSeconds": 2000
+    },
+    {
+      "sprinkler": 7755300017,
+      "runtimeSeconds": 1500
+    },
+    {
+      "sprinkler": 7755300004,
+      "runtimeSeconds": 2200
+    }
+  ]
+},
+{
+  "id": 5577300002,
+  "name": "Daily all-in",
+  "timeline": [{
+      "sprinkler": 7755300003,
+      "runtimeSeconds": 2000
+    },
+    {
+      "sprinkler": 7755300017,
+      "runtimeSeconds": 1500
+    },
+    {
+      "sprinkler": 7755300004,
+      "runtimeSeconds": 2200
+    }
+  ]
+}
+]

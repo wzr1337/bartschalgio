@@ -11,14 +11,14 @@
     "gpio": 3,
     "isActivebyDefault": false,
     "sprinklingRateLitersPerSecond": 0.3703703704,
-    "autoShutOffSeconds": 1800
+    "autoShutOffSeconds": 2000
 }, {
     "id" : 7755300004,
     "name": "frontyard",
     "gpio": 4,
     "isActivebyDefault": false,
     "sprinklingRateLitersPerSecond": 0.2173913043,
-    "autoShutOffSeconds": 1500
+    "autoShutOffSeconds": 2400
 }, {
     "id" : 7755300017,
     "name": "terrace",
@@ -26,14 +26,14 @@
     "isActivebyDefault": false,
     "sprinklingRateLitersPerSecond": 0.7993730407,
     "note":"0.4545454545 for side + 0.3448275862 for terace",
-    "autoShutOffSeconds": 1200
+    "autoShutOffSeconds": 1800
 }, {
     "id" : 7755300021,
     "name": "side",
     "gpio": 22,
     "isActivebyDefault": false,
     "sprinklingRateLitersPerSecond": 0.4545454545,
-    "autoShutOffSeconds": 1200
+    "autoShutOffSeconds": 1800
 }, {
     "id" : 7755300022,
     "name": "",
