@@ -26,6 +26,22 @@ const registerForFirebaseEvents =  () => {
   })
 }
 
+const repeatdaily = async (fn, hh = 0, mm = 0, ss = 0) => {
+  var now = new Date();
+  var night = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1, // the next day, ...
+      hh, mm, ss // ...at 00:00:00 hours
+  );
+  var msToMidnight = night.getTime() - now.getTime();
+
+  // wait
+  await sleep(msToMidnight);
+  fn();
+  await repeatdaily(fn, hh, mm, ss);
+}
+
 const init = async () => {
   // flush the sprinklers data to have unique entries
   try {
@@ -120,21 +136,21 @@ async function setScenarioState(scenarioId, body) {
       delete scenarios[scenarioId].currentSprinkler;
       scenarios[scenarioId].state = "running";
       await firebase.db.ref(scenarios[scenarioId].fb_path).update({state: scenarios[scenarioId].state});
-      logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) running`);
+      logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) ${scenarios[scenarioId].state}`);
       runScenario(scenarioId);
       resolve({status: 200});
     }
     if (body.state === "stop") {
       scenarios[scenarioId].state = body.state;
       await firebase.db.ref(scenarios[scenarioId].fb_path).update({state: scenarios[scenarioId].state});
-      logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) stopping`);
+      logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) ${scenarios[scenarioId].state}`);
       await sprinklers.setSprinklerState(scenarios[scenarioId].currentSprinkler, {
         isActive: false
       });
       delete scenarios[scenarioId].currentSprinkler;
       scenarios[scenarioId].state = "stopped";
       await firebase.db.ref(scenarios[scenarioId].fb_path).update({state: scenarios[scenarioId].state});
-      logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) stopped`);
+      logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) ${scenarios[scenarioId].state}`);
       resolve({status: 200});
     }
   });
@@ -144,11 +160,11 @@ const sleep = require('util').promisify(setTimeout)
 
 const runScenario = async (scenarioId) => {
   if (!scenarioId) throw new Error("missing scenarioId");
-  console.log(scenarios[scenarioId])
-  logger.error("running scenario:", scenarios[scenarioId].timeline);
+  
+  logger.info("running scenario:", scenarios[scenarioId].timeline);
   for (const item of scenarios[scenarioId].timeline) {
     if (scenarios[scenarioId].state !== "running") break; // break the loop
-    logger.error(`${scenarios[scenarioId].name} activates sprinkler ${item.sprinkler} out of timeline`);
+    logger.info(`${scenarios[scenarioId].name} activates sprinkler ${item.sprinkler} based on timeline`);
     scenarios[scenarioId].currentSprinkler = item.sprinkler;
     // switch it on
     await sprinklers.setSprinklerState(item.sprinkler, { isActive: true });
@@ -156,7 +172,15 @@ const runScenario = async (scenarioId) => {
     await sleep(item.runtimeSeconds * 1000);
     // switch off
     await sprinklers.setSprinklerState(item.sprinkler, { isActive: false });
+    logger.info(`${scenarios[scenarioId].name} de-activates sprinkler ${item.sprinkler} based on  timeline`);
   }
+  // if daily run is activated, do it
+  if (scenarios[scenarioId].runDaily) {
+    await repeatdaily(() => { runScenario(scenarioId, scenarios[scenarioId].dailyHH, scenarios[scenarioId].dailyMM, scenarios[scenarioId].dailySS) })
+  }
+  // stop scenario once all sprinklers were run
+  await setScenarioState(scenarioId, {state: "stopped"});
+
 }
 
 
