@@ -176,7 +176,7 @@ const runScenario = async (scenarioId) => {
   }
   // if daily run is activated, do it
   if (scenarios[scenarioId].runDaily) {
-    await repeatdaily(() => { runScenario(scenarioId, scenarios[scenarioId].dailyHH, scenarios[scenarioId].dailyMM, scenarios[scenarioId].dailySS) })
+    await repeatdaily(() => { runScenario(scenarioId, scenarios[scenarioId].runDaily.HH, scenarios[scenarioId].runDaily.MM, scenarios[scenarioId].runDaily.SS) })
   }
   // stop scenario once all sprinklers were run
   await setScenarioState(scenarioId, {state: "stopped"});

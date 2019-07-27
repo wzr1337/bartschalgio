@@ -30,6 +30,11 @@
       "sprinkler": 7755300004,
       "runtimeSeconds": 2200
     }
-  ]
+  ],
+  "runDaily" : {
+    "HH": 20,
+    "MM": 0,
+    "SS": 0
+  }
 }
 ]
