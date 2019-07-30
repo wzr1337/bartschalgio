@@ -26,7 +26,7 @@ const logger = (function () {
         args.unshift(colors.red(plotDate(), "[ERROR]"));
         console.error.apply(console, args);
     },
-    debug: () => {
+    debug: function() {
         var args = Array.prototype.slice.call(arguments);
         args.unshift(colors.yellow(plotDate(), "[DEBUG]"));
         console.log.apply(console, args);

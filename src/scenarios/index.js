@@ -26,20 +26,14 @@ const registerForFirebaseEvents =  () => {
   })
 }
 
-const repeatdaily = async (fn, hh = 0, mm = 0, ss = 0) => {
-  var now = new Date();
-  var night = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + 1, // the next day, ...
-      hh, mm, ss // ...at 00:00:00 hours
-  );
-  var msToMidnight = night.getTime() - now.getTime();
-
+const repeatScenario = async (fn, hh = 0, mm = 0, ss = 0) => {
+  logger.debug(hh,mm,ss)
+  var msToWait = (hh*60*60 +mm*60 +ss)*1000;
   // wait
-  await sleep(msToMidnight);
+  logger.info("waiting", msToWait, "ms for next scenario run");
+  await sleep(msToWait);
   fn();
-  await repeatdaily(fn, hh, mm, ss);
+  await repeatScenario(fn, hh, mm, ss);
 }
 
 const init = async () => {
@@ -140,7 +134,7 @@ async function setScenarioState(scenarioId, body) {
       runScenario(scenarioId);
       resolve({status: 200});
     }
-    if (body.state === "stop") {
+    else if (body.state === "stop") {
       scenarios[scenarioId].state = body.state;
       await firebase.db.ref(scenarios[scenarioId].fb_path).update({state: scenarios[scenarioId].state});
       logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) ${scenarios[scenarioId].state}`);
@@ -152,6 +146,9 @@ async function setScenarioState(scenarioId, body) {
       await firebase.db.ref(scenarios[scenarioId].fb_path).update({state: scenarios[scenarioId].state});
       logger.log(`scenario ${scenarioId}(${scenarios[scenarioId].name}) ${scenarios[scenarioId].state}`);
       resolve({status: 200});
+    }
+    else {
+      logger.info("UNable to set scenario state", body.state, "not recognized, use start/stop");
     }
   });
 }
@@ -176,7 +173,10 @@ const runScenario = async (scenarioId) => {
   }
   // if daily run is activated, do it
   if (scenarios[scenarioId].runDaily) {
-    await repeatdaily(() => { runScenario(scenarioId, scenarios[scenarioId].runDaily.HH, scenarios[scenarioId].runDaily.MM, scenarios[scenarioId].runDaily.SS) })
+    await repeatScenario(() => { 
+      logger.info(`daily ${scenarios[scenarioId].runDaily.HH}:${scenarios[scenarioId].runDaily.MM}:${scenarios[scenarioId].runDaily.SS}`)
+      runScenario(scenarioId)
+    }, scenarios[scenarioId].runDaily.HH, scenarios[scenarioId].runDaily.MM, scenarios[scenarioId].runDaily.SS);
   }
   // stop scenario once all sprinklers were run
   await setScenarioState(scenarioId, {state: "stopped"});
