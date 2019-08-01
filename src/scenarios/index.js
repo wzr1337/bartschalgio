@@ -30,13 +30,11 @@ const registerForFirebaseEvents =  () => {
 }
 
 const repeatScenario = async (fn, hh = 0, mm = 0, ss = 0) => {
-  logger.debug(hh,mm,ss)
   var msToWait = (hh*60*60 +mm*60 +ss)*1000;
   // wait
   logger.info("waiting", msToWait, "ms for next scenario run");
   await sleep(msToWait);
   fn();
-  await repeatScenario(fn, hh, mm, ss);
 }
 
 const init = async () => {
