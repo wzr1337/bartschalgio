@@ -185,6 +185,7 @@ async function setSprinklerState(id, states) {
   // fi no sprinler was found, retun an error
   if (!sprinkler) {
     var err = new Error('Object not found');
+    logger.error(`setSprinklerState(${id}) - Sprinkler not found`)
     return {
       status: 404,
       body: {
@@ -197,7 +198,7 @@ async function setSprinklerState(id, states) {
   var isActive = (states.isActive === true) || (states.isactive === true);
 
   if (sprinkler.isActive === isActive) {
-    logger.info("Doing nothing, current state", sprinkler.isActive, "equals desired state", isActive);
+    logger.info(`Doing nothing, current state ${sprinkler.isActive}, equals desired state`, isActive);
     return {
       status: 200,
       body: _toObject(sprinkler)
