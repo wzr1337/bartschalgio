@@ -20,21 +20,21 @@
   "name": "Daily all-in",
   "timeline": [{
       "sprinkler": 7755300003,
-      "runtimeSeconds": 2
+      "runtimeSeconds": 2000
     },
     {
       "sprinkler": 7755300017,
-      "runtimeSeconds": 1
+      "runtimeSeconds": 1500
     },
     {
       "sprinkler": 7755300004,
-      "runtimeSeconds": 2
+      "runtimeSeconds": 2200
     }
   ],
   "runDaily" : {
-    "HH": 0,
+    "HH": 20,
     "MM": 0,
-    "SS": 5
+    "SS": 0
   }
 }
 ]
