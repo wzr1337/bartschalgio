@@ -19,13 +19,14 @@ let scenarios = {};
  */
 const registerForFirebaseEvents =  () => {
   scenariosRef.on('child_changed', async (snapshot) => {
-    const scenario = snapshot.toJSON();
-    logger.log(`${scenario.id}(${scenario.name}) was set remotely`);
-    scenario.fb_path = snapshot.ref.toString().substring(snapshot.ref.root.toString().length);
-    scenario.currentSprinkler = scenarios[scenario.id].currentSprinkler;
-    logger.info(`updating scenario ${scenario.id}(${scenario.name})`);
-    scenarios[scenario.id] = scenario;
-    if (scenario.state === "start" || scenario.state === "stop") await setScenarioState(scenario.id);
+    const scenarioUpdateFromFirebase = snapshot.toJSON();
+    logger.log(`${scenarioUpdateFromFirebase.id}(${scenarioUpdateFromFirebase.name}) was set remotely`);
+    scenarioUpdateFromFirebase.fb_path = snapshot.ref.toString().substring(snapshot.ref.root.toString().length);
+    scenarioUpdateFromFirebase.currentSprinkler = scenarios[scenarioUpdateFromFirebase.id].currentSprinkler;
+    logger.info(`updating scenario ${scenarioUpdateFromFirebase.id}(${scenarioUpdateFromFirebase.name})`);
+    const currentState = scenarios[scenarioUpdateFromFirebase.id].state;
+    scenarios[scenarioUpdateFromFirebase.id] = scenarioUpdateFromFirebase;
+    if (scenarioUpdateFromFirebase.state !== currentState) await setScenarioState(scenarioUpdateFromFirebase.id, {state: scenarioUpdateFromFirebase.state});
   })
 }
 
@@ -115,26 +116,35 @@ router.post('/:id?', async (req, res) => {
 
 /// !!! This need rewriting as the local cache in this.scenarios holds all the correct information after the child ChannelMergerNode, it might conflict with REST Access..
 /// The method is invoked double every time it call itself, so quickly adds thousands of runs
-async function setScenarioState(scenarioId) {
+async function setScenarioState(scenarioId, state) {
   if (!scenarioId) throw new Error("missing scenarioId");
   const scenario = scenarios[scenarioId];
   return new Promise(async (resolve, reject) => {
-    if (scenario.state === "start") {
-      delete scenarios[scenarioId].currentSprinkler;
-      await firebase.db.ref(scenario.fb_path).update({state: "running"});
-      logger.log(`scenario ${scenarioId}(${scenario.name}) set to "running"`);
-      runScenario(scenarioId);
-      resolve({status: 200});
-    }
-    else if (scenario.state === "stop") {
-      await firebase.db.ref(scenario.fb_path).update({state: "stopping"});
-      await sprinklers.setSprinklerState(scenario.currentSprinkler, {
-        isActive: false
-      });
-      delete scenarios[scenarioId].currentSprinkler;
-      await firebase.db.ref(scenarios[scenarioId].fb_path).update({state: "stopped"});
-      logger.log(`scenario ${scenarioId}(${scenario.name}) set to "stopped"`);
-      resolve({status: 200});
+    switch (state.state) {
+      case "start":
+        delete scenarios[scenarioId].currentSprinkler;
+        await firebase.db.ref(scenario.fb_path).update({state: "running"});
+        logger.log(`scenario ${scenarioId}(${scenario.name}) set to "running"`);
+        runScenario(scenarioId);
+        resolve({status: 200});
+        break;
+      case "stop":
+        scenarios[scenarioId].state = "stopping";
+        await firebase.db.ref(scenario.fb_path).update({state: "stopping"});
+        await sprinklers.setSprinklerState(scenario.currentSprinkler, {
+          isActive: false
+        });
+        delete scenarios[scenarioId].currentSprinkler;
+        scenarios[scenarioId].state = "stopped";
+        await firebase.db.ref(scenarios[scenarioId].fb_path).update({state: "stopped"});
+        logger.log(`scenario ${scenarioId}(${scenario.name}) set to "stopped"`);
+        resolve({status: 200});
+        break;
+      default:
+        const err = new Error(`scenario ${scenarioId}(${scenario.name}) set to "${scenario.state}" failed, as unknown`)
+        logger.error(err.message);
+        reject({status: 500, error: err.message});
+        break;
     }
   });
 }
@@ -153,7 +163,7 @@ const runScenario = async (scenarioId) => {
   for (const idx in currentScenario.timeline) {
     const item = currentScenario.timeline[idx];
     logger.error("item:", item)
-    if (currentScenario.state !== "running") break; // break the loop
+    if (scenarios[scenarioId].state !== "running") break; // break the loop => MUST NOT use the `currentScenario` variable as it would not reflect changes while running
     scenarios[scenarioId].currentSprinkler = item.sprinkler;
     logger.error("Scenario cache: ", scenarios[scenarioId])
     // switch it on
@@ -173,7 +183,7 @@ const runScenario = async (scenarioId) => {
     }, currentScenario.runDaily.HH, currentScenario.runDaily.MM, currentScenario.runDaily.SS);
   }
   // stop scenario once all sprinklers were run
-  await setScenarioState(scenarioId, {state: "stopped"});
+  await setScenarioState(scenarioId, {state: "stop"});
 
 }
 

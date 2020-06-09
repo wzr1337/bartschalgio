@@ -16,6 +16,23 @@
   ]
 },
 {
+  "id": 5577300001,
+  "name": "all-in-testing-short",
+  "timeline": [{
+      "sprinkler": 7755300003,
+      "runtimeSeconds": 10
+    },
+    {
+      "sprinkler": 7755300017,
+      "runtimeSeconds": 10
+    },
+    {
+      "sprinkler": 7755300004,
+      "runtimeSeconds": 10
+    }
+  ]
+},
+{
   "id": 5577300002,
   "name": "Daily all-in",
   "timeline": [{
