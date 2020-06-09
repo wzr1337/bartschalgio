@@ -3,15 +3,15 @@
   "name": "all-in",
   "timeline": [{
       "sprinkler": 7755300003,
-      "runtimeSeconds": 2000
+      "runtimeSeconds": 1600
     },
     {
       "sprinkler": 7755300017,
-      "runtimeSeconds": 1500
+      "runtimeSeconds": 1200
     },
     {
       "sprinkler": 7755300004,
-      "runtimeSeconds": 2200
+      "runtimeSeconds": 1800
     }
   ]
 },
@@ -20,15 +20,15 @@
   "name": "Daily all-in",
   "timeline": [{
       "sprinkler": 7755300003,
-      "runtimeSeconds": 2000
+      "runtimeSeconds": 1600
     },
     {
       "sprinkler": 7755300017,
-      "runtimeSeconds": 1500
+      "runtimeSeconds": 1200
     },
     {
       "sprinkler": 7755300004,
-      "runtimeSeconds": 2200
+      "runtimeSeconds": 1800
     }
   ],
   "runDaily" : {
